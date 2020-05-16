@@ -63,6 +63,28 @@ class Game:
         self.board.draw()
         pygame.display.flip()
 
+class StateMachine:
+    def __init__(self, gameState):
+        self._previousState = ""
+        self._state = None
+        self._gameState = gameState
+    def getState(self, state):
+        if self._state == None:
+            self._state = self._gameState
+            self._previousState = "game"
+        else:
+            newState = state.getState()
+            print(newState)
+            if newState != self._previousState:
+                self._previousState = newState
+                if newState == "game":
+                    self._state = self._gameState
+                elif newState == "endofgame":
+                    self._state = EndOfGame()
+                else:
+                    raise GameExceptions.WrongStateNameException("Wrong state name: {}".format(newState))
+        return self._state
+
 # Klasa odpowiedzialna za uruchomienie okna.
 # Tutaj znajduje się główna pętla gry.
 class Application:
