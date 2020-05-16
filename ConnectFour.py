@@ -21,7 +21,7 @@ class SampleApp(tk.Tk):
         for frame in self.frames:
             self.frames[frame].grid(row=0, column=0, sticky="nsew")
 
-        self.show_frame("Game")
+        self.showFrame("Game")
 
     def showFrame(self, page_name):
         '''Zmiana aktywnej ramki'''
@@ -34,6 +34,9 @@ class Game(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         self.controller = controller
+
+        label = tk.Label(self, text="Player 1", font=controller.title_font, cursor="hand1")
+        label.pack(side="top", fill="x", pady=10)
 
 
 class GameInfo(tk.Frame):
