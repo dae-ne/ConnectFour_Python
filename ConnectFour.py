@@ -1,111 +1,55 @@
-import pygame
+import tkinter as tk
+from tkinter import font as tkfont
 
-# Ta klasa odpowiedzialna jest za rysowanie planszy,
-# oraz przetrzymuje wartości każdego pola
-class Board:
-    def __init__(self, window):
-        self.window = window
-        self.rects = []
-        self.stateHeight = 100
+class SampleApp(tk.Tk):
 
-        # 0 - empty
-        # 1 - player 1
-        # 2 - player 2
-        self.fields = [[0, 0, 0, 0, 0, 0, 0],
-                       [0, 0, 0, 0, 0, 0, 0],
-                       [0, 0, 0, 0, 0, 0, 0],
-                       [0, 0, 0, 0, 0, 0, 0],
-                       [0, 0, 0, 0, 0, 0, 0],
-                       [0, 0, 0, 0, 0, 0, 0]]
+    def __init__(self, *args, **kwargs):
+        tk.Tk.__init__(self, *args, **kwargs)
+        self.title("Connect Four")
 
-    def draw(self):
-        self.drawLines()
+        self.title_font = tkfont.Font(family='Helvetica', size=18, weight="bold", slant="italic")
 
-    # Poziome i pionowe linie rysowane na ekranie
-    # Oddzielają one od siebie pojedyńcze pola
-    def drawLines(self):
-        width = self.window.get_rect()[2]
-        height = self.window.get_rect()[3]
-        x = width / 7
+        # Kontener, w którym umieszczane będą ramki aplikacji.
+        container = tk.Frame(self)
+        container.pack(side="top", fill="both", expand=True)
+        container.grid_rowconfigure(0, weight=1)
+        container.grid_columnconfigure(0, weight=1)
 
-        pygame.draw.line(self.window, (255, 255, 255), (0, 0), (0, height))
-        pygame.draw.line(self.window, (255, 255, 255), (width - 1, 0), (width - 1, height))
-        pygame.draw.line(self.window, (255, 255, 255), (0, height - 1), (width, height - 1))
+        # Dictionary comprehension
+        self.frames = {F.__name__: F(parent=container, controller=self)
+            for F in (Game, GameInfo, EndOfGame)}
+        for frame in self.frames:
+            self.frames[frame].grid(row=0, column=0, sticky="nsew")
 
-        for i in range(6):
-            width = width - x
-            pygame.draw.line(self.window, (255, 255, 255), (width, self.stateHeight), (width, height + self.stateHeight))
+        self.show_frame("Game")
 
-        width = self.window.get_rect()[2]
+    def showFrame(self, page_name):
+        '''Zmiana aktywnej ramki'''
+        frame = self.frames[page_name]
+        frame.tkraise()
 
-        for i in range(6):
-            height = height - x
-            pygame.draw.line(self.window, (255, 255, 255), (0, height), (width, height))
 
-# Główna klasa gry. Łączy powyższe klasy w spójną i przedewszystkim
-# działającą całość
-class Game:
-    def __init__(self, window):
-        self.window = window
-        self.board = Board(window)
-        self.isRunning = True
+class Game(tk.Frame):
 
-    # Eventy takie jak ruch myszy, czy też kliknięcie jej klawisza
-    def events(self):
-        for event in pygame.event.get():
-            # Zamknięcie okna
-            if event.type == pygame.QUIT:
-                self.isRunning = False
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
 
-    # Rysowanie wszystkich elementów na ekranie
-    def draw(self):
-        self.window.fill((0, 0, 0, 0))
-        self.board.draw()
-        pygame.display.flip()
 
-class StateMachine:
-    def __init__(self, gameState):
-        self._previousState = ""
-        self._state = None
-        self._gameState = gameState
-    def getState(self, state):
-        if self._state == None:
-            self._state = self._gameState
-            self._previousState = "game"
-        else:
-            newState = state.getState()
-            print(newState)
-            if newState != self._previousState:
-                self._previousState = newState
-                if newState == "game":
-                    self._state = self._gameState
-                elif newState == "endofgame":
-                    self._state = EndOfGame()
-                else:
-                    raise GameExceptions.WrongStateNameException("Wrong state name: {}".format(newState))
-        return self._state
+class GameInfo(tk.Frame):
 
-# Klasa odpowiedzialna za uruchomienie okna.
-# Tutaj znajduje się główna pętla gry.
-class Application:
-    def __init__(self):
-        self.window = None
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
 
-    def createWindow(self):
-        pygame.init()
-        pygame.display.set_caption('Connect Four')
-        self.window = pygame.display.set_mode((700, 700))
 
-    def run(self):
-        self.createWindow()
-        game = Game(self.window)
+class EndOfGame(tk.Frame):
 
-        while game.isRunning:
-            game.events()
-            game.draw()
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
 
-#===============================================================
 
 if __name__ == "__main__":
-    app = Application()
-    app.run()
+    app = SampleApp()
+    app.mainloop()
