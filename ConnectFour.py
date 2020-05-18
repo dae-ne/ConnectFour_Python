@@ -21,8 +21,8 @@ from tkinter import font as tkfont
 #   rozpoczęcia nowej gry lub zamknięcia programu
 # - dokumentacja
 # - usunięcie okna konsoli
+# - testy na klasie GameBoard
 # - dopisanie nowych pomysłów
-# - testy na klasie Board
 
 class Error(Exception):
 
@@ -68,7 +68,7 @@ class Application(tk.Tk):
         for frame in self.frames:
             self.frames[frame].grid(row=0, column=0, sticky="nsew")
 
-        # Rakmka startowa
+        # Ramka startowa
         self.showFrame("Game") # TODO: obsługa wyjątku
 
     # Zmiana ramki
