@@ -1,6 +1,14 @@
 import tkinter as tk
 from tkinter import font as tkfont
+import numpy as np
 #from GameExceptions import *
+
+WINDOW_SIZE = (700, 700)
+GAME_FIELDS = (6, 7) # (y, x)
+PLAYER_FONT_SIZE = 24
+GAME_BACKGROUND_COLOR = "white"
+GAME_FOREGROUND_COLOR = "black"
+GAME_ACTIVE_BUTTON_COLOR = "grey"
 
 # TODO:
 # - zamienić część zmiennych na stałe globalne
@@ -34,18 +42,39 @@ class Error(Exception):
         return self._value
 
 
-class InvalidFrameNameError(Error):
+class InvalidFrameNameException(Error):
 
     def __init__(self, value):
         super().__init__(value)
 
-    def getValue(self):
-        return self._value
+
+class ColumnStackedException(Error):
+
+    def __init__(self, value):
+        super().__init__(value)
 
 
 class GameBoard:
-    def scan(self):
-        pass
+
+    def __init__(self):
+        self._board = np.zeros(GAME_FIELDS)
+
+    def getBoardField(self, x, y):
+        return self._board[y][x]
+
+    def setBoardField(self, x, y, value):
+        self._board[y][x] = value
+
+    def scan(self, x, y):
+        tmpX, tmpY = x, y
+        ok = []
+        directions = ((1, 0), (0, 1), (1, 1))
+        for dir in directions:
+            if self._board[tmpY][tmpX] == 1:
+                ok.append(tmpY, tmpX)
+
+    def printBoard(self):
+        print(self._board)
 
 
 class Application(tk.Tk):
@@ -54,7 +83,7 @@ class Application(tk.Tk):
         tk.Tk.__init__(self, *args, **kwargs)
         self.title("Connect Four")
 
-        self.title_font = tkfont.Font(size=24, weight="bold", slant="italic")
+        self.title_font = tkfont.Font(size=PLAYER_FONT_SIZE, weight="bold", slant="italic")
 
         # Kontener, w którym umieszczane będą ramki aplikacji
         container = tk.Frame(self)
@@ -68,14 +97,14 @@ class Application(tk.Tk):
         for frame in self.frames:
             self.frames[frame].grid(row=0, column=0, sticky="nsew")
 
-        # Ramka startowa
+        # Ramkka startowa
         self.showFrame("Game") # TODO: obsługa wyjątku
 
     # Zmiana ramki
     def showFrame(self, pageName):
         '''Zmiana aktywnej ramki'''
         if not pageName in self.frames:
-            raise InvalidFrameNameError("{} frame doesn't exist".format(pageName))
+            raise InvalidFrameNameException("{} frame doesn't exist".format(pageName))
             return
 
         frame = self.frames[pageName]
@@ -87,17 +116,18 @@ class Game(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         self.controller = controller
-        self.configure(bg="white")
+        self.configure(bg=GAME_BACKGROUND_COLOR)
 
-        tiles = (7,6) # To zmienie na stałą globalną
+        self._gameBoard = GameBoard()
 
-        label = tk.Label(self, text="Player 1", font=self.controller.title_font, anchor="center", bg="white")
-        label.grid(columnspan=tiles[0], sticky=tk.NSEW)
-        self._fields = [[] for _ in range(tiles[1])]
+        label = tk.Label(self, text="Player 1", font=self.controller.title_font, anchor="center", bg=GAME_BACKGROUND_COLOR, fg=GAME_FOREGROUND_COLOR)
+        label.grid(columnspan=GAME_FIELDS[1], sticky=tk.NSEW)
+        self._fields = [[] for _ in range(GAME_FIELDS[1])]
 
-        for y in range(tiles[1]):
-            for x in range(tiles[0]):
-                self._fields[y].append(tk.Canvas(self, width=100, height=100, cursor="hand1", bg="black"))
+        for y in range(GAME_FIELDS[0]):
+            for x in range(GAME_FIELDS[1]):
+                self._fields[y].append(tk.Canvas(self, width=100, height=100, cursor="hand1", bg=GAME_FOREGROUND_COLOR))
+                self._fields[y][x].configure(highlightbackground=GAME_BACKGROUND_COLOR)
                 self._fields[y][x].grid(row=y+1, column=x, padx=1)
                 self._fields[y][x].bind("<Enter>", lambda event, arg=x: self.field_Enter(event, arg))
                 self._fields[y][x].bind("<Leave>", lambda event, arg=x: self.field_Leave(event, arg))
@@ -108,20 +138,23 @@ class Game(tk.Frame):
     ##################### eventy ##################################
 
     def field_Enter(self, event, column):
-        tiles = (7,6) # To zmienie na stałą globalną
-        for y in range(tiles[1]):
-            self._fields[y][column].configure(bg="gray")
+        for y in range(GAME_FIELDS[0]):
+            self._fields[y][column].configure(bg=GAME_ACTIVE_BUTTON_COLOR)
         # TODO: wyróżnienie najniższego wolnego pola
 
     def field_Leave(self, event, column):
-        tiles = (7,6) # To zmienie na stałą globalną
-        for y in range(tiles[1]):
-            self._fields[y][column].configure(bg="black")
+        for y in range(GAME_FIELDS[0]):
+            self._fields[y][column].configure(bg=GAME_FOREGROUND_COLOR)
 
-    def field_Button1Click(self, event, column):
-        tiles = (7,6) # To zmienie na stałą globalną
-        self._fields[0][column].create_oval(15, 15, 85, 85, outline="white", fill="white", width=20)
-        # TODO: wstawianie żetonów w odpowiednie miejsca
+    def field_Button1Click(self, event, column):#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        for i in range(GAME_FIELDS[0] - 1, -1, -1):
+            if self._gameBoard.getBoardField(column, i) == 0:
+                self._gameBoard.setBoardField(column, i, 1)
+                self._fields[i][column].create_oval(15, 15, 85, 85, fill=GAME_BACKGROUND_COLOR, width=0)
+                break
+        else:
+            #raise ColumnStackedException("This column is already filled")
+            self._gameBoard.printBoard()
 
 
 class GameInfo(tk.Frame):
