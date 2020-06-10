@@ -322,7 +322,7 @@ class Game(tk.Frame):
             self._label.configure(
                 text=self._players[self.current_player].name)
 
-    def changePlayer(self):
+    def change_player(self):
         """Zmiana tury."""
         if self.current_player == PLAYER1_TURN:
             self.current_player = PLAYER2_TURN
@@ -358,7 +358,7 @@ class Game(tk.Frame):
                     messagebox.showerror("Error!", e)
                     self.controller.destroy()
 
-        self.changePlayer()
+        self.change_player()
         self.update()
 
     def clear_board(self):
@@ -414,7 +414,7 @@ class Game(tk.Frame):
                         messagebox.showerror("Error!", e)
                         self.controller.destroy()
 
-                self.changePlayer()
+                self.change_player()
                 self.update()
                 break
         else:
