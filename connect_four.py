@@ -1,8 +1,8 @@
-import tkinter as tk
-from tkinter import font as tkfont
-from tkinter import messagebox
 import numpy as np
 import random
+from tkinter import font as tkfont
+from tkinter import messagebox
+import tkinter as tk
 
 
 BOARD_SIZE = (600, 700)  # (y, x)
@@ -275,7 +275,7 @@ class Game(tk.Frame):
         self.current_player = PLAYER1_TURN  # przyjmuje wartość 0 lub 1
         self.player_or_computer = GAME_WITH_COMPUTER
 
-        self._game_board = GameBoard()
+        self.game_board = GameBoard()
         self._players = (Player(PLAYER1_NAME, PLAYER1_FILED_NO, PLAYER1_COLOR),
                          Player(PLAYER2_NAME, PLAYER2_FILED_NO, PLAYER2_COLOR))
         self._computer = AI(AI_NAME, COMPUTER_FIELD_NO,
@@ -333,11 +333,11 @@ class Game(tk.Frame):
         """Ruch komputera."""
         row = 0
         col, minimax_score = self._computer.minimax(
-            self._game_board.board, MINIMAX_DEPTH, -np.inf, np.inf, True)
+            self.game_board.board, MINIMAX_DEPTH, -np.inf, np.inf, True)
 
         for i in range(GAME_FIELDS[0] - 1, -1, -1):
-            if self._game_board.board[i][col] == 0:
-                self._game_board.board[i][col] = self._computer.number
+            if self.game_board.board[i][col] == 0:
+                self.game_board.board[i][col] = self._computer.number
                 self._fields[i][col].create_oval(
                     *TOKEN_POSITION, fill=self._computer.color, width=0)
                 row = i
@@ -350,7 +350,7 @@ class Game(tk.Frame):
                 messagebox.showerror("Error!", e)
                 self.controller.destroy()
         if minimax_score == FINAL_SCORE:
-            if (self._game_board.scan(col, row, 3)):
+            if (self.game_board.scan(col, row, 3)):
                 messagebox.showinfo(None, "Komputer wygrał")
                 try:
                     self.controller.show_frame("MainMenu")
@@ -363,7 +363,7 @@ class Game(tk.Frame):
 
     def clear_board(self):
         """Czyszczenie planszy."""
-        self._game_board.clear_board()
+        self.game_board.clear_board()
 
         for y in range(GAME_FIELDS[0]):
             for x in range(GAME_FIELDS[1]):
@@ -374,7 +374,7 @@ class Game(tk.Frame):
         isHighlighted = False
 
         for y in range(GAME_FIELDS[0] - 1, -1, -1):
-            if (self._game_board.board[y][column] == 0 and
+            if (self.game_board.board[y][column] == 0 and
                     isHighlighted is False):
                 self._fields[y][column].configure(
                     bg=GAME_ACTIVE_BUTTON_COLOR_2)
@@ -395,16 +395,16 @@ class Game(tk.Frame):
             return
 
         for i in range(GAME_FIELDS[0] - 1, -1, -1):
-            if self._game_board.board[i][column] == 0:
+            if self.game_board.board[i][column] == 0:
                 player_number = self._players[self.current_player].number
-                self._game_board.board[i][column] = player_number
+                self.game_board.board[i][column] = player_number
                 self._fields[i][column].create_oval(
                     *TOKEN_POSITION,
                     fill=self._players[self.current_player].color,
                     width=0)
                 self.field_enter(None, column)
 
-                if self._game_board.scan(
+                if self.game_board.scan(
                         column, i, player_number):
                     messagebox.showinfo(None, "Koniec gry")
 
